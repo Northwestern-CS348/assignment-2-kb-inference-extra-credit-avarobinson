@@ -130,6 +130,40 @@ class KnowledgeBase(object):
         # Implementation goes here
         # Not required for the extra credit assignment
 
+    def kb_supports(self, fact_or_rule, indent):
+        supports=""
+        if len(fact_or_rule.supported_by)!=0:
+            #look throguh supported by, 0 element is a fact, 1 element is a rule: for each list in the supported by thing, print fact, print rule then call supports on each thing and increase the indent
+            for support in fact_or_rule.supported_by: #support is a fact, rule pair
+                supports += ("  " * indent) + "SUPPORTED BY" + "\n"
+                fact_support=support[0]
+                rule_support=support[1]
+
+                supports += "  "*(indent+1)
+                supports += "fact: " + fact_support.statement.__str__()
+                if fact_support.asserted:
+                    supports += " ASSERTED"
+                supports += "\n"
+
+                supports += "  " * (indent+1)
+                supports += self.kb_print_rule(rule_support)
+                if rule_support.asserted:
+                    supports += " ASSERTED"
+                supports += "\n"
+
+                supports += self.kb_supports(fact_support, indent + 2)
+                supports += self.kb_supports(rule_support, indent + 2)
+
+        return supports
+    def kb_print_rule(self, rule):
+        lhs="rule: ("
+        for state in rule.lhs: #for each statement on the LHS of the rule
+            lhs += state.__str__()
+            if state!=rule.lhs[len(rule.lhs)-1]:
+                lhs += ", "
+        lhs+=") -> "
+        lhs+=rule.rhs.__str__()
+        return lhs
     def kb_explain(self, fact_or_rule):
         """
         Explain where the fact or rule comes from
@@ -142,6 +176,36 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+        indent = 1 #counter for how much to indent
+        explain="" #keep track of entire string
+
+        #if it is a fact
+        if isinstance(fact_or_rule, Fact):
+            #check if in the KB
+            fact=self._get_fact(fact_or_rule)
+            if fact in self.facts: # if the fact is in the facts list
+                explain = "fact: " + fact.statement.__str__()
+                if fact.asserted: #if the fact is asserted
+                    explain += " ASSERTED"
+                explain += "\n" + self.kb_supports(fact, indent)
+
+            else: #if fact is not in the KB
+                explain="Fact is not in the KB"
+
+        #if it is a rule
+        elif isinstance(fact_or_rule, Rule):
+            rule=self._get_rule(fact_or_rule)
+            #check if rule is in KB
+            if rule in self.rules: #rule is in the KB
+                explain += self.kb_print_rule(rule)
+                if rule.asserted: #if the rule is asserted
+                    explain += " ASSERTED"
+                explain += "\n" + self.kb_supports(rule, indent)
+            else: #rule is not in the KB
+                explain="Rule is not in the KB"
+
+        return explain
+
 
 
 class InferenceEngine(object):
