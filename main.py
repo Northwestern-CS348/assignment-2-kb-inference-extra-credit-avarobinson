@@ -147,6 +147,7 @@ rule: ((eats so many nyala leaves)) -> (eats few) ASSERTED\n\
         rule: ((eats ?x plantBasedFood), (isa ?y plantBasedFood)) -> (eats ?x ?y) ASSERTED\
 '
         actual = self.KB.kb_explain(read.parse_input("rule: ((eats so many nyala leaves)) -> (eats few)"))
+        print(actual)
         self.compare(self.expected, actual)
 
 if __name__ == '__main__':
